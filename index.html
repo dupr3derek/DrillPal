@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DrillPal: find pickleball partners</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#EAF0F3;--surface:#fff;--ink:#14212B;--muted:#566774;--court:#1F5C8B;--court-ink:#fff;--hero:#1F5C8B;--ball:#D8E234;--line:#CFDAE1;--ok:#1E7A4F;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1A22;--surface:#16262F;--ink:#E8F0F4;--muted:#9AAAB5;--court:#7DBCE8;--court-ink:#0E1A22;--hero:#173F5E;--line:#2A3C47;--ok:#5CD08F;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0E1A22;--surface:#16262F;--ink:#E8F0F4;--muted:#9AAAB5;--court:#7DBCE8;--court-ink:#0E1A22;--hero:#173F5E;--line:#2A3C47;--ok:#5CD08F;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.45 "Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--hero);z-index:10}
+.wrap{max-width:560px;margin:0 auto}
+header{background:var(--hero);color:#fff;padding:28px 20px 26px;position:relative}
+header::after{content:"";position:absolute;left:0;right:0;bottom:12px;height:2px;background:rgba(255,255,255,.55)}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px}.logo .sp{flex:1}.lang{font:inherit;font-size:14px;color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:4px 8px}.lang option{color:#14212B}
+.ball{width:18px;height:18px;border-radius:50%;background:var(--ball);box-shadow:inset -3px -3px 0 rgba(0,0,0,.12)}
+h1{font-size:34px;line-height:1.05;font-weight:800;margin:18px 0 8px;letter-spacing:-.02em;max-width:12ch}
+header p{margin:0;opacity:.9;max-width:34ch}
+main{padding:16px 16px 110px}
+section[hidden]{display:none}
+.filters{display:grid;gap:12px;margin-bottom:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip,.sel{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--court);border-color:var(--court);color:var(--court-ink);font-weight:600}
+.row2{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.row2 label{font-size:14px;color:var(--muted)}
+input[type=range]{accent-color:var(--court);flex:1;min-width:120px}
+.card,.item{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.top{display:flex;gap:12px;align-items:center}
+.av{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;background:hsl(var(--h) 45% 38%)}
+.top b{display:block;font-size:17px}
+.sub{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+.pips{display:inline-flex;gap:3px}
+.pips i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--muted)}
+.pips i.on{background:var(--ball);border-color:#8A9100}
+.bio{margin:12px 0}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.tag{font-size:13px;border:1px solid var(--line);border-radius:6px;padding:2px 8px;color:var(--muted)}
+.btn{font:inherit;font-weight:600;background:var(--court);color:var(--court-ink);border:0;border-radius:10px;padding:10px 16px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.7;cursor:default}
+.btn.sm{padding:7px 12px}
+.acts{display:flex;gap:8px}
+h2{font-size:20px;margin:6px 0 12px}
+h3{font-size:15px;color:var(--muted);margin:20px 0 10px;font-weight:600}
+.empty{color:var(--muted);padding:24px 4px}
+.item{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.item .who{display:flex;gap:12px;align-items:center;min-width:0}
+.item small{display:block;color:var(--muted)}
+.state-ok{color:var(--ok);font-weight:600;font-size:14px}
+ul{list-style:none;margin:0;padding:0}
+.rowbtn{all:unset;box-sizing:border-box;width:100%;display:flex;gap:12px;align-items:center;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.rowbtn small{display:block;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60vw}
+.thread-h{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.back{font:inherit;background:none;border:0;color:var(--court);cursor:pointer;padding:6px 8px 6px 0;font-weight:600}
+.msgs{display:flex;flex-direction:column;gap:8px;min-height:240px;padding:4px 0 12px}
+.m{max-width:80%;padding:9px 13px;border-radius:16px;background:var(--surface);border:1px solid var(--line);align-self:flex-start}
+.m.me{align-self:flex-end;background:var(--court);color:var(--court-ink);border-color:var(--court)}
+.composer{position:sticky;bottom:calc(66px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;background:var(--bg);padding:8px 0}
+.composer input{flex:1;font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav .in{max-width:560px;margin:0 auto;display:flex}
+.tab{flex:1;font:inherit;background:none;border:0;color:var(--muted);padding:12px 4px;cursor:pointer;position:relative;font-weight:600}
+.tab[aria-selected="true"]{color:var(--court);box-shadow:inset 0 3px 0 var(--court)}
+.badge{display:inline-block;min-width:18px;height:18px;border-radius:9px;background:var(--ball);color:#222;font-size:12px;line-height:18px;text-align:center;margin-left:6px}
+.foot{color:var(--muted);font-size:13px;margin-top:20px}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:90vw}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+.form{display:grid;gap:14px}.form label{font-size:14px;color:var(--muted);display:grid;gap:6px}.form input,.form select,.form textarea{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}.msg-note{color:var(--muted);font-size:14px;margin:0}nav .tab{font-size:14px}#where{flex:1;min-width:140px}.fs{border:0;padding:0;margin:0;min-width:0}.fs legend{font-size:14px;color:var(--muted);margin-bottom:8px;padding:0}.chk{display:grid;grid-template-columns:1fr 1fr;gap:8px}.form .chk label{display:flex;align-items:center;gap:8px;color:var(--ink);font-size:14px}.form .chk input{width:auto}
+:focus-visible{outline:3px solid var(--court);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo"><span class="ball"></span>DrillPal<span class="sp"></span><select id="lang" class="lang" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁體中文</option><option value="ja">日本語</option><option value="vi">Tiếng Việt</option></select></div>
+  <h1 data-i18n="Find someone to DRILL with.">Find someone to DRILL with.</h1>
+  <p data-i18n="Match with nearby players by skill level, schedule, and play style.">Match with nearby players by skill level, schedule, and play style.</p>
+</header>
+<main>
+  <section id="discover">
+    <div class="filters">
+      <div class="chips" id="lvl" role="group" aria-label="Skill level"></div>
+      <div class="row2">
+        <label for="drill" data-i18n="Drill">Drill</label>
+        <select id="drill" class="sel"></select>
+      </div>
+      <div class="row2">
+        <label for="time" data-i18n="When">When</label>
+        <select id="time" class="sel">
+          
+        </select>
+      </div>
+      <div class="row2">
+        <label for="where" data-i18n="Where">Where</label>
+        <input id="where" class="sel" list="wherelist" autocomplete="off">
+        <datalist id="wherelist"></datalist>
+      </div>
+    </div>
+    <div id="list"></div>
+    <p class="foot" data-i18n="Other players see your name, suburb or district, and country, never your address."></p>
+  </section>
+  <section id="requests" hidden></section>
+  <section id="chat" hidden></section>
+  <section id="profile" hidden></section>
+</main>
+</div>
+<nav><div class="in" role="tablist">
+  <button class="tab" role="tab" data-tab="discover" aria-selected="true"><span data-i18n="Discover">Discover</span></button>
+  <button class="tab" role="tab" hidden data-tab="requests" aria-selected="false"><span data-i18n="Requests">Requests</span><span class="badge" id="bd"></span></button>
+  <button class="tab" role="tab" hidden data-tab="chat" aria-selected="false"><span data-i18n="Chat">Chat</span></button>
+  <button class="tab" role="tab" data-tab="profile" aria-selected="false"><span data-i18n="Profile">Profile</span></button>
+</div></nav>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+var P=[];
+var L={Beginner:1,Intermediate:2,Advanced:3};
+var INC=[];
+var LI={"zh-CN":0,"zh-TW":1,ja:2,vi:3},lang="en";
+var D={
+"Find someone to DRILL with.":["找个球友一起练球吧。","找個球友一起練球吧。","一緒に練習する相手を見つけよう。","Tìm người tập luyện cùng bạn."],
+"Match with nearby players by skill level, schedule, and play style.":["按水平、时间和打法，匹配附近的球友。", "依程度、時間和打法，配對附近的球友。", "レベル、スケジュール、プレースタイルで近くのプレーヤーとマッチング。", "Kết nối với người chơi gần bạn theo trình độ, lịch chơi và phong cách."],
+"When":["时间", "時間", "時間帯", "Khi nào"],
+"Within":["距离不超过", "距離不超過", "範囲", "Trong vòng"],
+"Other players see your name, suburb or district, and country, never your address.":["其他球友只能看到你的名字、所在区域和国家/地区，看不到你的地址。","其他球友只能看到你的名字、所在地區和國家/地區，看不到你的地址。","他のプレーヤーに表示されるのは名前、地区、国だけで、住所は見えません。","Người chơi khác chỉ thấy tên, quận hoặc khu vực và quốc gia của bạn, không thấy địa chỉ."],
+"Discover":["发现", "探索", "さがす", "Khám phá"],
+"Requests":["请求", "請求", "リクエスト", "Yêu cầu"],
+"Chat":["聊天", "聊天", "チャット", "Trò chuyện"],
+"Skill level":["水平", "程度", "レベル", "Trình độ"],
+"Language":["语言", "語言", "言語", "Ngôn ngữ"],
+"All":["全部", "全部", "すべて", "Tất cả"],
+"Beginner":["新手", "新手", "初心者", "Mới chơi"],
+"Intermediate":["中级", "中級", "中級", "Trung bình"],
+"Advanced":["高级", "高級", "上級", "Nâng cao"],
+"Any time":["不限时间", "不限時間", "いつでも", "Bất kỳ lúc nào"],
+"Weekday mornings":["工作日早晨", "平日早晨", "平日の朝", "Sáng ngày thường"],
+"Weekday evenings":["工作日晚上", "平日晚上", "平日の夜", "Tối ngày thường"],
+"Weekend mornings":["周末早晨", "週末早晨", "週末の朝", "Sáng cuối tuần"],
+"Profile":["我的资料","我的資料","プロフィール","Hồ sơ"],
+"Create your profile":["创建你的资料","建立你的資料","プロフィールを作成","Tạo hồ sơ của bạn"],
+"Your name":["你的名字","你的名字","名前","Tên của bạn"],
+"Country":["国家/地区","國家/地區","国","Quốc gia"],
+"Start typing to search":["输入以搜索","輸入以搜尋","入力して検索","Nhập để tìm kiếm"],
+"Choose a country from the list.":["请从列表中选择国家/地区。","請從清單中選擇國家/地區。","リストから国を選んでください。","Hãy chọn một quốc gia trong danh sách."],
+"Add new profile":["添加新资料","新增資料","新しいプロフィールを追加","Thêm hồ sơ mới"],
+"Serve and Return":["发球与接发球","發球與接發球","サーブ＆リターン","Giao bóng và trả giao bóng"],
+"Dink":["吊小球","吊小球","ディンク","Dink"],
+"Volley":["截击","截擊","ボレー","Volley"],
+"Third Shot":["第三拍","第三拍","サードショット","Cú đánh thứ ba"],
+"7-11":["7-11","7-11","7-11","7-11"],
+"Shake and Bake":["Shake and Bake","Shake and Bake","シェイク＆ベイク","Shake and Bake"],
+"Backhand to Backhand":["反手对反手","反手對反手","バックハンド・トゥ・バックハンド","Trái tay đối trái tay"],
+"Figure 8 Dink":["8字吊小球","8字吊小球","ディンク8の字","Dink hình số 8"],
+"Figure 8 Volley":["8字截击","8字截擊","ボレー8の字","Volley hình số 8"],
+"Speedup and Block":["加速与格挡","加速與格擋","スピードアップ＆ブロック","Tăng tốc và chặn"],
+"Mid-Court Reset":["中场化解","中場化解","ミッドコートリセット","Reset giữa sân"],
+"Cross-Court Dink":["斜线吊小球","斜線吊小球","クロスコートディンク","Dink chéo sân"],
+"Drive and Drop":["抽球与吊球","抽球與吊球","ドライブ＆ドロップ","Drive và Drop"],
+"Twoey Topspin Dink":["Twoey 上旋吊小球","Twoey 上旋吊小球","ツーイー・トップスピンディンク","Dink xoáy lên Twoey"],
+"Drill":["训练项目","訓練項目","ドリル","Bài tập"],
+"Any drill":["任意项目","任意項目","どのドリルでも","Bất kỳ bài tập nào"],
+"Drills you want to practice":["想练习的项目","想練習的項目","練習したいドリル","Bài tập bạn muốn luyện"],
+"Cat and Mouse":["猫捉老鼠","貓捉老鼠","キャット＆マウス","Mèo vờn chuột"],
+"Modify":["修改","修改","変更","Chỉnh sửa"],
+"Modify profile":["修改资料","修改資料","プロフィールを変更","Chỉnh sửa hồ sơ"],
+"Cancel":["取消","取消","キャンセル","Hủy"],
+"Where":["地点","地點","場所","Ở đâu"],
+"Any suburb":["任意区域","任意地區","どの地区でも","Bất kỳ khu vực nào"],
+"Suburb or District":["郊区或区域","郊區或地區","地区またはエリア","Quận hoặc khu vực"],
+"Play style":["打法","打法","プレースタイル","Phong cách chơi"],
+"Short bio (optional)":["简短介绍（可选）","簡短介紹（選填）","自己紹介（任意）","Giới thiệu ngắn (không bắt buộc)"],
+"Save profile":["保存资料","儲存資料","保存する","Lưu hồ sơ"],
+"Profile saved":["资料已保存","資料已儲存","保存しました","Đã lưu hồ sơ"],
+"Edit profile":["编辑资料","編輯資料","編集する","Sửa hồ sơ"],
+"Member":["会员","會員","メンバー","Thành viên"],
+"Registration needs a signed-in account with edit access.":["注册需要已登录且有编辑权限的账号。","註冊需要已登入且具備編輯權限的帳號。","登録には、ログイン済みで編集権限のあるアカウントが必要です。","Cần tài khoản đã đăng nhập và có quyền chỉnh sửa để đăng ký."],
+"Could not save. Try again.":["保存失败，请重试。","儲存失敗，請重試。","保存できませんでした。もう一度お試しください。","Không lưu được. Hãy thử lại."],
+"Enter your name.":["请输入名字。","請輸入名字。","名前を入力してください。","Hãy nhập tên của bạn."],
+"Weekday afternoons":["工作日下午","平日下午","平日の午後","Chiều ngày thường"],
+"Weekend evenings":["周末晚上","週末晚上","週末の夜","Tối cuối tuần"],
+"Weekend afternoons":["周末下午", "週末下午", "週末の午後", "Chiều cuối tuần"],
+"Social doubles":["休闲双打", "休閒雙打", "気軽なダブルス", "Đánh đôi giao lưu"],
+"Competitive doubles":["竞技双打", "競技雙打", "真剣勝負のダブルス", "Đánh đôi thi đấu"],
+"Tournament prep":["备战比赛", "備戰比賽", "大会に向けた練習", "Luyện thi đấu giải"],
+"Casual singles":["休闲单打", "休閒單打", "気軽なシングルス", "Đánh đơn giao lưu"],
+"Casual rallies":["轻松对打", "輕鬆對打", "気軽なラリー", "Đánh qua lại thoải mái"],
+"Mixed doubles":["混合双打", "混合雙打", "ミックスダブルス", "Đánh đôi nam nữ"],
+"km away":["km 外", "km 遠", "km 先", "km từ bạn"],
+"Send request":["发送请求", "傳送請求", "リクエストを送る", "Gửi yêu cầu"],
+"Request sent":["请求已发送", "請求已傳送", "リクエスト送信済み", "Đã gửi yêu cầu"],
+"Open chat":["打开聊天", "開啟聊天", "チャットを開く", "Mở trò chuyện"],
+"No players match. Try a different level or time.":["没有符合条件的球友。试试更换水平或时间。","沒有符合條件的球友。試試更換程度或時間。","条件に合うプレーヤーがいません。レベルか時間帯を変えてみてください。","Không có người chơi phù hợp. Hãy thử đổi trình độ hoặc giờ chơi."],
+"No players yet. Be the first to register in the Profile tab.":["还没有球友。快到“我的资料”页成为第一个注册的人吧。","還沒有球友。快到「我的資料」頁成為第一個註冊的人吧。","まだプレーヤーがいません。「プロフィール」タブで最初に登録しましょう。","Chưa có người chơi nào. Hãy là người đầu tiên đăng ký ở tab Hồ sơ."],
+"Accept":["接受", "接受", "承認", "Chấp nhận"],
+"Decline":["拒绝", "拒絕", "断る", "Từ chối"],
+"Wants to play with you":["想和你一起打球", "想和你一起打球", "一緒にプレーしたい人", "Muốn chơi cùng bạn"],
+"No new requests.":["没有新请求。", "沒有新請求。", "新しいリクエストはありません。", "Chưa có yêu cầu mới."],
+"Requests you sent":["你发出的请求", "你送出的請求", "送信したリクエスト", "Yêu cầu bạn đã gửi"],
+"Send a request from Discover to get started.":["先去“发现”页发送一个请求吧。", "先到「探索」頁傳送一個請求吧。", "まず「さがす」からリクエストを送ってみましょう。", "Hãy gửi yêu cầu từ mục Khám phá để bắt đầu."],
+"Accepted":["已接受", "已接受", "承認済み", "Đã chấp nhận"],
+"Waiting for reply":["等待回复", "等待回覆", "返信待ち", "Đang chờ phản hồi"],
+"No chats yet. Once a player accepts your request, you can plan a game here.":["还没有聊天。对方接受请求后，就可以在这里约球了。", "還沒有聊天。對方接受請求後，就可以在這裡約球了。", "まだチャットはありません。相手がリクエストを承認すると、ここで試合の相談ができます。", "Chưa có cuộc trò chuyện nào. Khi có người chấp nhận yêu cầu, bạn có thể hẹn trận ở đây."],
+"Suggest a time and court":["建议时间和场地", "建議時間和場地", "時間とコートを提案", "Gợi ý giờ và sân"],
+"Message":["消息", "訊息", "メッセージ", "Tin nhắn"],
+"Send":["发送", "傳送", "送信", "Gửi"],
+"Request sent to {n}":["已向 {n} 发送请求", "已向 {n} 傳送請求", "{n} さんにリクエストを送りました", "Đã gửi yêu cầu tới {n}"],
+"{n} accepted your request":["{n} 接受了你的请求", "{n} 接受了你的請求", "{n} さんがリクエストを承認しました", "{n} đã chấp nhận yêu cầu của bạn"],
+"Accepted. Say hi in Chat.":["已接受。去聊天里打个招呼吧。", "已接受。到聊天裡打個招呼吧。", "承認しました。チャットで挨拶してみましょう。", "Đã chấp nhận. Hãy chào hỏi trong phần Trò chuyện."],
+"Request declined":["已拒绝请求", "已拒絕請求", "リクエストを断りました", "Đã từ chối yêu cầu"],
+"New message from {n}":["{n} 发来新消息", "{n} 傳來新訊息", "{n} さんから新着メッセージ", "Tin nhắn mới từ {n}"],
+"Hey! Thanks for the request. When are you free to play?":["你好！谢谢你的请求。你什么时候有空打球？", "你好！謝謝你的請求。你什麼時候有空打球？", "こんにちは！リクエストありがとう。いつ空いてる？", "Chào bạn! Cảm ơn đã gửi yêu cầu. Khi nào bạn rảnh để chơi?"],
+"Great to connect. What days work for you?":["很高兴认识你。你哪几天方便？", "很高興認識你。你哪幾天方便？", "つながれて嬉しいです。都合のいい曜日はいつですか？", "Rất vui được kết nối. Bạn tiện những ngày nào?"],
+"Sounds good. Which court?":["好啊。在哪个场地？", "好啊。在哪個場地？", "いいね。どのコートにする？", "Được đó. Mình chơi ở sân nào?"],
+"I can do that. See you there.":["可以。到时候见。", "可以。到時候見。", "大丈夫です。現地で会いましょう。", "Được nhé. Hẹn gặp ở đó."],
+"Perfect. I’ll bring extra balls.":["太好了。我多带几个球。", "太好了。我多帶幾顆球。", "完璧。ボールを多めに持っていくね。", "Tuyệt. Mình sẽ mang thêm bóng."],
+"Works for me. Want to warm up first?":["我可以。要不要先热身？", "我可以。要不要先熱身？", "大丈夫。先にウォームアップする？", "Mình ổn. Khởi động trước nhé?"]
+};
+try{lang=localStorage.getItem("dp-lang")||""}catch(e){lang=""}
+if(lang!=="en"&&!LI.hasOwnProperty(lang)){var nl=navigator.language||"en";nl=/^zh/i.test(nl)?(/TW|HK|MO|Hant/i.test(nl)?"zh-TW":"zh-CN"):nl.slice(0,2).toLowerCase();lang=LI.hasOwnProperty(nl)?nl:"en"}
+function T(k,n){var v=lang==="en"?k:((D[k]||[])[LI[lang]]||k);return n?v.replace("{n}",n):v}
+var S={tab:"discover",level:"All",time:"Any time",dist:15,sent:{},chats:{},open:null};
+var $=function(s){return document.querySelector(s)};
+var esc=function(s){return s.replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+var byId=function(id){return P.filter(function(p){return p.id===+id})[0]};
+var first=function(p){return p.n.split(" ")[0]};
+function av(p){return '<span class="av" style="--h:'+p.h+'">'+esc(p.n.split(" ").slice(0,2).map(function(w){return w[0]||""}).join(""))+'</span>'}
+function pips(p){return '<span class="pips" role="img" aria-label="'+T(p.lv)+'">'+[1,2,3].map(function(i){return '<i class="'+(i<=L[p.lv]?"on":"")+'"></i>'}).join("")+'</span>'}
+function toast(t){var el=$("#toast");el.textContent=t;el.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(function(){el.classList.remove("on")},2600)}
+
+function renderChips(){
+  $("#lvl").innerHTML=["All","Beginner","Intermediate","Advanced"].map(function(l){return '<button class="chip" data-act="lvl" data-v="'+l+'" aria-pressed="'+(S.level===l)+'">'+T(l)+'</button>'}).join("");
+}
+function buildWhere(){
+  var seen={},o=[];
+  M.forEach(function(p){var a=(p.area||"").trim(),k=a.toLowerCase();if(a&&!seen[k]){seen[k]=1;o.push(a)}});
+  o.sort(function(a,b){return a.localeCompare(b)});
+  var sig=o.join("|");if(sig===S.wsig)return;S.wsig=sig;
+  $("#wherelist").innerHTML=o.map(function(a){return '<option value="'+esc(a)+'">'}).join("");
+}
+function renderList(){buildWhere();
+  var f=M.concat(P).filter(function(p){return (S.level==="All"||p.lv===S.level)&&(S.time==="Any time"||p.time===S.time)&&(!S.drill||(p.drills&&p.drills.indexOf(S.drill)>-1))&&(p.member||p.km<=S.dist)&&(!S.where||(p.area||"").toLowerCase().indexOf(S.where)>-1)});
+  $("#list").innerHTML=f.length?f.map(function(p){
+    var s=S.sent[p.id],b;if(p.member){b='<span class="tag">'+T("Member")+'</span>'}else 
+    if(!s)b='<button class="btn" data-act="req" data-id="'+p.id+'">'+T("Send request")+'</button>';
+    else if(s==="pending")b='<button class="btn ghost" disabled>'+T("Request sent")+'</button>';
+    else b='<button class="btn ghost" data-act="chat" data-id="'+p.id+'">'+T("Open chat")+'</button>';
+    return '<article class="card"><div class="top">'+av(p)+'<div><b>'+esc(p.n)+'</b><div class="sub">'+pips(p)+'<span>'+T(p.lv)+'</span><span>'+(p.member?loc(p):p.km+' '+T("km away"))+'</span></div></div></div><p class="bio">'+esc(p.bio)+'</p><div class="tags"><span class="tag">'+T(p.time)+'</span><span class="tag">'+T(p.st)+'</span>'+dsort(p.drills||[]).map(function(k){return '<span class="tag">'+T(k)+'</span>'}).join("")+'</div>'+b+'</article>';
+  }).join(""):'<p class="empty">'+T(M.length?"No players match. Try a different level or time.":"No players yet. Be the first to register in the Profile tab.")+'</p>';
+}
+function renderReq(){
+  var inc=INC.map(function(id){var p=byId(id);return '<div class="item"><div class="who">'+av(p)+'<div><b>'+p.n+'</b><small>'+T(p.lv)+', '+T(p.time)+'</small></div></div><div class="acts"><button class="btn sm" data-act="acc" data-id="'+id+'">'+T("Accept")+'</button><button class="btn sm ghost" data-act="dec" data-id="'+id+'">'+T("Decline")+'</button></div></div>'}).join("");
+  var ids=Object.keys(S.sent);
+  var out=ids.map(function(id){var p=byId(id),a=S.sent[id]==="accepted";return '<div class="item"><div class="who">'+av(p)+'<div><b>'+p.n+'</b><small>'+T(p.time)+'</small></div></div>'+(a?'<span class="state-ok">'+T("Accepted")+'</span>':'<small>'+T("Waiting for reply")+'</small>')+'</div>'}).join("");
+  $("#requests").innerHTML='<h2>'+T("Requests")+'</h2><h3>'+T("Wants to play with you")+'</h3>'+(inc||'<p class="empty">'+T("No new requests.")+'</p>')+'<h3>'+T("Requests you sent")+'</h3>'+(out||'<p class="empty">'+T("Send a request from Discover to get started.")+'</p>');
+  $("#bd").textContent=INC.length||"";$("#bd").style.display=INC.length?"inline-block":"none";
+}
+function paintMsgs(){
+  var m=$("#msgs");if(!m)return;
+  m.innerHTML=S.chats[S.open].map(function(x){return '<div class="m'+(x.me?" me":"")+'">'+esc(x.t)+'</div>'}).join("");
+  window.scrollTo(0,document.body.scrollHeight);
+}
+function renderChat(){
+  var el=$("#chat");
+  if(S.open==null){
+    var ids=Object.keys(S.chats);
+    el.innerHTML='<h2>'+T("Chat")+'</h2>'+(ids.length?'<ul>'+ids.map(function(id){var p=byId(id),c=S.chats[id];return '<li><button class="rowbtn" data-act="chat" data-id="'+id+'">'+av(p)+'<span><b>'+p.n+'</b><small>'+esc(c[c.length-1].t)+'</small></span></button></li>'}).join("")+'</ul>':'<p class="empty">'+T("No chats yet. Once a player accepts your request, you can plan a game here.")+'</p>');
+  }else{
+    var p=byId(S.open);
+    el.innerHTML='<div class="thread-h"><button class="back" data-act="back">‹ '+T("Chat")+'</button>'+av(p)+'<b>'+p.n+'</b></div><div id="msgs" class="msgs" aria-live="polite"></div><div class="composer"><input id="msg" placeholder="'+T("Suggest a time and court")+'" autocomplete="off" aria-label="'+T("Message")+'"><button class="btn" data-act="send">'+T("Send")+'</button></div>';
+    paintMsgs();
+  }
+}
+function show(t){
+  S.tab=t;
+  ["discover","requests","chat","profile"].forEach(function(k){$("#"+k).hidden=k!==t});
+  document.querySelectorAll(".tab").forEach(function(b){b.setAttribute("aria-selected",b.dataset.tab===t)});
+  if(t==="chat"){renderChat()}
+  if(t==="requests"){renderReq()}if(t==="profile"){renderProfile()}
+  window.scrollTo(0,0);
+}
+function ensureChat(id,msgs){if(!S.chats[id])S.chats[id]=msgs}
+function sendMsg(){
+  var i=$("#msg"),t=i.value.trim();if(!t)return;
+  var id=S.open;S.chats[id].push({me:true,t:t});i.value="";paintMsgs();i.focus();
+  var R=["Sounds good. Which court?","I can do that. See you there.","Perfect. I’ll bring extra balls.","Works for me. Want to warm up first?"];
+  setTimeout(function(){S.chats[id].push({me:false,t:T(R[Math.floor(Math.random()*R.length)])});if(S.tab==="chat"&&S.open===id)paintMsgs();else toast(T("New message from {n}",first(byId(id))))},1300);
+}
+document.addEventListener("click",function(e){
+  var t=e.target.closest("[data-act],[data-tab]");if(!t)return;
+  if(t.dataset.tab){S.open=null;show(t.dataset.tab);return}
+  var a=t.dataset.act,id=t.dataset.id;
+  if(a==="lvl"){S.level=t.dataset.v;renderChips();renderList()}
+  else if(a==="req"){
+    S.sent[id]="pending";renderList();toast(T("Request sent to {n}",first(byId(id))));
+    setTimeout(function(){S.sent[id]="accepted";ensureChat(id,[{me:false,t:T("Hey! Thanks for the request. When are you free to play?")}]);renderList();if(S.tab==="requests")renderReq();toast(T("{n} accepted your request",first(byId(id))))},2200);
+  }
+  else if(a==="acc"){INC=INC.filter(function(x){return x!==+id});S.sent[id]="accepted";ensureChat(id,[{me:false,t:T("Great to connect. What days work for you?")}]);renderReq();renderList();toast(T("Accepted. Say hi in Chat."))}
+  else if(a==="dec"){INC=INC.filter(function(x){return x!==+id});renderReq();toast(T("Request declined"))}
+  else if(a==="chat"){S.open=+id;show("chat")}
+  else if(a==="back"){S.open=null;renderChat()}
+  else if(a==="send"){sendMsg()}else if(a==="save"){saveProfile()}else if(a==="edit"){S.editing=true;renderProfile()}else if(a==="new"){S.fresh=true;S.editing=true;renderProfile()}else if(a==="cancel"){S.editing=false;S.fresh=false;renderProfile()}
+});
+document.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.id==="msg")sendMsg()});
+$("#time").addEventListener("change",function(e){S.time=e.target.value;renderList()});
+$("#drill").addEventListener("change",function(e){S.drill=e.target.value;renderList()});
+$("#where").addEventListener("input",function(e){S.where=e.target.value.trim().toLowerCase();renderList()});
+var M=[],ME=null,DB=null,CAN=null,NOEDIT=false,KEY=null;
+var DR=["Serve and Return", "Dink", "Volley", "Third Shot", "7-11", "Shake and Bake", "Backhand to Backhand", "Figure 8 Dink", "Figure 8 Volley", "Speedup and Block", "Mid-Court Reset", "Cross-Court Dink", "Drive and Drop", "Twoey Topspin Dink", "Cat and Mouse"];
+var TIMES=["Weekday mornings","Weekday afternoons","Weekday evenings","Weekend mornings","Weekend afternoons","Weekend evenings"];
+var STY=["Social doubles","Competitive doubles","Tournament prep","Casual singles","Casual rallies","Mixed doubles"];
+var CC="AF AL DZ AD AO AG AR AM AU AT AZ BS BH BD BB BY BE BZ BJ BT BO BA BW BR BN BG BF BI CV KH CM CA CF TD CL CN CO KM CG CD CR CI HR CU CY CZ DK DJ DM DO EC EG SV GQ ER EE SZ ET FJ FI FR GA GM GE DE GH GR GD GT GN GW GY HT HN HU IS IN ID IR IQ IE IL IT JM JP JO KZ KE KI KP KR KW KG LA LV LB LS LR LY LI LT LU MG MW MY MV ML MT MH MR MU MX FM MD MC MN ME MA MZ MM NA NR NP NL NZ NI NE NG MK NO OM PK PW PA PG PY PE PH PL PT QA RO RU RW KN LC VC WS SM ST SA SN RS SC SL SG SK SI SB SO ZA SS ES LK SD SR SE CH SY TJ TZ TH TL TG TO TT TN TR TM TV UG UA AE GB US UY UZ VU VA VE VN YE ZM ZW TW HK MO PS XK".split(" ");
+function cname(c){try{return new Intl.DisplayNames([lang],{type:"region"}).of(c)||c}catch(e){return c}}
+function cList(){return CC.map(function(c){return {c:c,n:cname(c)}}).sort(function(a,b){return a.n.localeCompare(b.n,lang)})}
+function loc(p){return [p.area,p.country?cname(p.country):""].filter(Boolean).map(esc).join(", ")}
+function hue(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%360;return h}
+function mem(d){return {id:d.id,n:d.name,lv:d.lv,time:d.time,st:d.st,area:d.area||"",country:d.country||"",drills:(d.drills||"").split(",").filter(function(k){return DR.indexOf(k)>-1}),bio:d.bio||"",h:hue(d.id),member:true}}
+function opts(l,sel){return l.map(function(x){return '<option value="'+x+'"'+(x===sel?" selected":"")+'>'+T(x)+'</option>'}).join("")}
+function canMod(m){return NOEDIT?!!(KEY&&m.id===ME):true}
+function renderProfile(){
+  var el=$("#profile"),me=null;
+  if(ME)me=M.filter(function(x){return x.id===ME})[0];
+  if(!DB||!ME||CAN===false){el.innerHTML='<h2>'+T("Profile")+'</h2><p class="empty">'+T("Registration needs a signed-in account with edit access.")+'</p>';return}
+  if(me&&!S.editing){el.innerHTML='<h2>'+T("Profile")+'</h2><article class="card"><div class="top">'+av(me)+'<div><b>'+esc(me.n)+'</b><div class="sub">'+pips(me)+'<span>'+T(me.lv)+'</span><span>'+loc(me)+'</span></div></div></div><p class="bio">'+esc(me.bio)+'</p><div class="tags"><span class="tag">'+T(me.time)+'</span><span class="tag">'+T(me.st)+'</span>'+dsort(me.drills||[]).map(function(k){return '<span class="tag">'+T(k)+'</span>'}).join("")+'</div>'+('<div class="acts">'+(canMod(me)?'<button class="btn" data-act="edit">'+T("Modify")+'</button>':'')+(NOEDIT?'<button class="btn ghost" data-act="new">'+T("Add new profile")+'</button>':'')+'</div>')+'</article>';return}
+  var v=(me&&!S.fresh)?me:{n:"",lv:"Beginner",time:TIMES[0],st:STY[0],area:"",bio:""};
+  el.innerHTML='<h2>'+T(me&&!S.fresh?"Modify profile":"Create your profile")+'</h2><div class="form"><label>'+T("Your name")+'<input id="f-n" maxlength="40" autocomplete="name" value="'+esc(v.n)+'"></label><label>'+T("Skill level")+'<select id="f-lv">'+opts(["Beginner","Intermediate","Advanced"],v.lv)+'</select></label><label>'+T("When")+'<select id="f-t">'+opts(TIMES,v.time)+'</select></label><label>'+T("Play style")+'<select id="f-s">'+opts(STY,v.st)+'</select></label><fieldset class="fs"><legend>'+T("Drills you want to practice")+'</legend><div class="chk">'+dsort(DR).map(function(x){return '<label><input type="checkbox" value="'+esc(x)+'"'+((v.drills||[]).indexOf(x)>-1?" checked":"")+'> '+T(x)+'</label>'}).join("")+'</div></fieldset><label>'+T("Country")+'<input id="f-c" list="countries" autocomplete="off" placeholder="'+T("Start typing to search")+'" value="'+esc(v.country?cname(v.country):"")+'"></label><datalist id="countries">'+cList().map(function(x){return '<option value="'+esc(x.n)+'">'}).join("")+'</datalist><label>'+T("Suburb or District")+'<input id="f-a" list="suburbs" autocomplete="off" maxlength="60" placeholder="'+T("Start typing to search")+'" value="'+esc(v.area)+'"></label><datalist id="suburbs"></datalist><label>'+T("Short bio (optional)")+'<textarea id="f-b" rows="3" maxlength="140">'+esc(v.bio)+'</textarea></label><div class="acts"><button class="btn" data-act="save">'+T("Save profile")+'</button>'+(me?'<button class="btn ghost" data-act="cancel">'+T("Cancel")+'</button>':'')+'</div><p class="msg-note" id="f-m" role="status"></p></div>';
+}
+var SUG=null,SUGT=0;
+function ccFromInput(){var el=$("#f-c");if(!el)return "";var cv=el.value.trim().toLowerCase(),c=cList().filter(function(x){return x.n.toLowerCase()===cv})[0];return c?c.c:""}
+function suggest(){
+  var a=$("#f-a"),dl=$("#suburbs");if(!a||!dl)return;
+  var cc=ccFromInput(),q=a.value.trim();
+  clearTimeout(SUGT);if(SUG&&SUG.abort)SUG.abort();
+  if(!cc||q.length<2){dl.innerHTML="";return}
+  SUGT=setTimeout(function(){
+    var l={"zh-CN":"zh","zh-TW":"zh",ja:"ja",vi:"vi"}[lang]||"en";
+    SUG=typeof AbortController!=="undefined"?new AbortController():null;
+    fetch("https://geocoding-api.open-meteo.com/v1/search?name="+encodeURIComponent(q)+"&count=20&language="+l+"&countryCode="+cc,SUG?{signal:SUG.signal}:{}).then(function(r){return r.json()}).then(function(j){
+      var seen={},out=[];
+      (j.results||[]).forEach(function(x){
+        if(x.country_code&&x.country_code!==cc)return;
+        var v=x.name+(x.admin1&&x.admin1!==x.name?", "+x.admin1:"");
+        if(!seen[v]){seen[v]=1;out.push(v)}
+      });
+      dl.innerHTML=out.slice(0,10).map(function(v){return '<option value="'+esc(v)+'">'}).join("");
+    }).catch(function(){});
+  },250);
+}
+document.addEventListener("input",function(e){if(e.target.id==="f-a"||e.target.id==="f-c")suggest()});
+document.addEventListener("change",function(e){if(e.target.id==="f-c"){var a=$("#f-a"),d=$("#suburbs");if(a&&a.value)a.value="";if(d)d.innerHTML=""}});
+function saveProfile(){
+  var n=$("#f-n").value.trim(),m=$("#f-m");
+  if(!n){m.textContent=T("Enter your name.");$("#f-n").focus();return}
+  var cv=$("#f-c").value.trim().toLowerCase(),cc=cList().filter(function(x){return x.n.toLowerCase()===cv||x.c.toLowerCase()===cv})[0];
+  if(!cc){m.textContent=T("Choose a country from the list.");$("#f-c").focus();return}
+  var d={name:n.slice(0,40),lv:$("#f-lv").value,time:$("#f-t").value,st:$("#f-s").value,area:$("#f-a").value.trim().slice(0,60),country:cc.c,drills:Array.prototype.map.call(document.querySelectorAll("#profile .chk input:checked"),function(c){return c.value}).join(","),bio:$("#f-b").value.trim().slice(0,140),ts:Date.now()};
+  DB.doc("players/"+ME).set(d).then(function(){
+    var id=ME;d.id=id;M=M.filter(function(x){return x.id!==id}).concat(mem(d));
+    S.editing=false;S.fresh=false;toast(T("Profile saved"));renderProfile();renderList();
+  }).catch(function(){m.textContent=T("Could not save. Try again.")});
+}
+function localDb(){
+  var K="drillpal-players",subs=[];
+  function load(){try{return JSON.parse(localStorage.getItem(K)||"{}")}catch(e){return {}}}
+  function emit(){var o=load(),snap={docs:Object.keys(o).map(function(id){return {id:id,exists:true,data:function(){return o[id]}}})};subs.forEach(function(f){f(snap)})}
+  return {
+    doc:function(p){var id=p.split("/")[1];return {set:function(d){return new Promise(function(res,rej){try{var o=load();o[id]=d;localStorage.setItem(K,JSON.stringify(o));emit();res()}catch(e){rej(e)}})}}},
+    collection:function(){return {onSnapshot:function(f){subs.push(f);emit()}}}
+  };
+}
+var SB="https://ufgtdbuzgfwwntkfjjqe.supabase.co/rest/v1/players",SBR="https://ufgtdbuzgfwwntkfjjqe.supabase.co/rest/v1/rpc/",SBK="sb_publishable_BAVr38sYOiNdUp3i5jHzew_vTV86fu9";
+function uuid4(){var c=window.crypto;if(c&&c.randomUUID)return c.randomUUID();var b=new Uint8Array(16);c.getRandomValues(b);b[6]=b[6]&15|64;b[8]=b[8]&63|128;var h=Array.prototype.map.call(b,function(x){return ("0"+x.toString(16)).slice(-2)}).join("");return h.slice(0,8)+"-"+h.slice(8,12)+"-"+h.slice(12,16)+"-"+h.slice(16,20)+"-"+h.slice(20)}
+function rpc(name,body){return fetch(SBR+name,{method:"POST",headers:{apikey:SBK,"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){return t?JSON.parse(t):null})}
+function remoteDb(){
+  function load(){return fetch(SB+"?select=*&order=created_at.desc&limit=200",{headers:{apikey:SBK}}).then(function(r){if(!r.ok)throw 0;return r.json()})}
+  return {
+    doc:function(){return {set:function(d){
+      var p={p_name:d.name,p_lv:d.lv,p_time:d.time,p_st:d.st,p_area:d.area,p_country:d.country,p_drills:d.drills,p_bio:d.bio};
+      if(KEY&&ME&&ME!=="pending"&&!S.fresh){p.p_id=ME;p.p_key=KEY;return rpc("update_player",p)}
+      var k=uuid4();p.p_key=k;
+      return rpc("register_player",p).then(function(id){ME=id;KEY=k;try{localStorage.setItem("drillpal-me",id);localStorage.setItem("drillpal-key",k)}catch(e){}});
+    }}},
+    collection:function(){return {onSnapshot:function(f){load().then(function(rows){f({docs:rows.map(function(x){return {id:x.id,exists:true,data:function(){return x}}})})}).catch(function(){})}}}
+  };
+}
+function initDb(){
+  var local=typeof claude==="undefined"||!claude.use;
+  (local?Promise.resolve().then(function(){try{ME=localStorage.getItem("drillpal-me")||"pending";KEY=localStorage.getItem("drillpal-key")}catch(e){ME="pending"}CAN=true;NOEDIT=true}):claude.use("user").then(function(u){
+    if(!u)return;
+    return Promise.all([u.id(),u.can("data.write")]).then(function(r){ME=r[0];CAN=r[1]});
+  })).catch(function(){}).then(function(){return local?remoteDb():claude.use("db")}).then(function(db){
+    DB=db;
+    if(db){db.collection("players").onSnapshot(function(snap){
+      M=snap.docs.filter(function(d){return d.exists}).map(function(d){var x=d.data();return mem({id:d.id,name:String(x.name||""),lv:x.lv,time:x.time,st:x.st,area:String(x.area||""),country:CC.indexOf(String(x.country))>-1?String(x.country):"",drills:String(x.drills||""),bio:String(x.bio||"")})}).filter(function(x){return x.n&&L[x.lv]&&TIMES.indexOf(x.time)>-1&&STY.indexOf(x.st)>-1});
+      renderList();if(S.tab==="profile"&&!S.editing)renderProfile();
+    },function(){})}
+    renderProfile();
+  }).catch(function(){renderProfile()});
+}
+function dsort(a){return a.slice().sort(function(x,y){return T(x).localeCompare(T(y),lang)})}
+function buildDrill(){$("#drill").innerHTML='<option value="">'+T("Any drill")+'</option>'+dsort(DR).map(function(x){return '<option value="'+esc(x)+'"'+(S.drill===x?" selected":"")+'>'+T(x)+'</option>'}).join("")}
+function buildTime(){var o=["Any time","Weekday mornings","Weekday afternoons","Weekday evenings","Weekend mornings","Weekend afternoons","Weekend evenings"];$("#time").innerHTML=o.map(function(x){return '<option value="'+x+'"'+(S.time===x?" selected":"")+'>'+T(x)+'</option>'}).join("")}
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i18n]").forEach(function(el){el.textContent=T(el.dataset.i18n)});
+  $("#lvl").setAttribute("aria-label",T("Skill level"));$("#where").placeholder=T("Any suburb");$("#lang").setAttribute("aria-label",T("Language"));$("#lang").value=lang;
+  buildTime();buildDrill();renderChips();renderList();renderReq();if(S.tab==="chat")renderChat();if(S.tab==="profile")renderProfile();
+}
+$("#lang").addEventListener("change",function(e){lang=e.target.value;try{localStorage.setItem("dp-lang",lang)}catch(x){}applyLang()});
+applyLang();
+initDb();
+</script>
+</body>
+</html>
